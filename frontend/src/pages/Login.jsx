@@ -15,11 +15,19 @@ const Login = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!username || !password) {
+      alert("Please enter username and password.");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const res = await fetch(
         "http://localhost:5000/api/users/login",
         {
@@ -37,25 +45,31 @@ const Login = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message);
+        alert(data.message || "Login failed.");
         return;
       }
 
       console.log("Logged in user:", data.user);
 
+      // Save user + token in AuthContext/localStorage
       setUser({
         ...data.user,
         token: data.token,
       });
 
+      // Admin → Admin Dashboard
       if (data.user.role === "admin") {
-        navigate("/admin");
+        navigate("/admin", { replace: true });
       } else {
-        navigate("/");
+        // Normal user → Home
+        navigate("/", { replace: true });
       }
+
     } catch (error) {
       console.error("Login failed:", error);
       alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,27 +84,27 @@ const Login = () => {
                    shadow-2xl shadow-gray-950/70"
       >
         <div className="w-full flex justify-center items-center py-5">
-            <div className="flex items-center gap-3 cursor-pointer">
+          <div className="flex items-center gap-3 cursor-pointer">
 
-              <House
-                className="w-8 h-8
-                           text-orange-400
-                           drop-shadow-lg"
-              />
+            <House
+              className="w-8 h-8
+                         text-orange-400
+                         drop-shadow-lg"
+            />
 
-              <h1
-                className="text-3xl md:text-4xl
-                           font-extrabold
-                           tracking-widest
-                           uppercase"
-              >
-                DEEP
-                <span className="text-orange-400">
-                  STORE
-                </span>
-              </h1>
+            <h1
+              className="text-3xl md:text-4xl
+                         font-extrabold
+                         tracking-widest
+                         uppercase"
+            >
+              DEEP
+              <span className="text-orange-400">
+                STORE
+              </span>
+            </h1>
 
-            </div>
+          </div>
         </div>
       </header>
 
@@ -163,6 +177,7 @@ const Login = () => {
                       setUsername(e.target.value)
                     }
                     placeholder="Enter username"
+                    disabled={loading}
                     className="w-full
                                pl-12
                                pr-4
@@ -177,7 +192,8 @@ const Login = () => {
                                focus:ring-2
                                focus:ring-orange-500/20
                                transition-all
-                               duration-300"
+                               duration-300
+                               disabled:opacity-50"
                   />
 
                 </div>
@@ -214,6 +230,7 @@ const Login = () => {
                       setPassword(e.target.value)
                     }
                     placeholder="Enter password"
+                    disabled={loading}
                     className="w-full
                                pl-12
                                pr-4
@@ -228,7 +245,8 @@ const Login = () => {
                                focus:ring-2
                                focus:ring-orange-500/20
                                transition-all
-                               duration-300"
+                               duration-300
+                               disabled:opacity-50"
                   />
 
                 </div>
@@ -237,6 +255,7 @@ const Login = () => {
               {/* LOGIN BUTTON */}
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full
                            mt-3
                            py-3.5
@@ -255,10 +274,16 @@ const Login = () => {
                            hover:shadow-orange-900/50
                            active:scale-95
                            transition-all
-                           duration-300"
+                           duration-300
+                           disabled:opacity-50
+                           disabled:cursor-not-allowed
+                           disabled:hover:translate-y-0"
               >
-                Login
-                <ArrowRight className="w-5 h-5" />
+                {loading ? "Logging in..." : "Login"}
+
+                {!loading && (
+                  <ArrowRight className="w-5 h-5" />
+                )}
               </button>
 
             </form>
