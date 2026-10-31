@@ -131,7 +131,7 @@ const Login = () => {
             <div className="text-center mb-8">
 
               <h1 className="text-3xl font-extrabold text-white">
-                Welcome Back
+                Welcome!
               </h1>
 
               <p className="text-gray-500 text-sm mt-2">
